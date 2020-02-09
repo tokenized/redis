@@ -7,7 +7,7 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 )
 
-func NewRedisPool(uri string) (*redigo.Pool, error) {
+func NewPool(uri string) (*redigo.Pool, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
