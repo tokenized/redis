@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"log"
+	"context"
 
 	"github.com/gomodule/redigo/redis"
 	redigo "github.com/gomodule/redigo/redis"
@@ -13,6 +13,7 @@ type Subscriber struct {
 	pool   *redis.Pool
 	key    string
 	output chan []byte
+	Logger Logger
 }
 
 // NewSubscriber creates a Subscriber that will use the provided
@@ -20,18 +21,19 @@ type Subscriber struct {
 //
 // Any messages that are received by the Subscriber will be written to the
 // channel.
-func NewSubscriber(pool *redigo.Pool, key string, out chan []byte) Subscriber {
+func NewSubscriber(logger Logger, pool *redigo.Pool, key string, out chan []byte) Subscriber {
 	return Subscriber{
 		pool:   pool,
 		key:    key,
 		output: out,
+		Logger: logger,
 	}
 }
 
 // Run receives pubsub messages from Redis after establishing a connection.
 //
 // When a valid message is received it is written to the channel.
-func (s *Subscriber) Run() error {
+func (s *Subscriber) Run(ctx context.Context) error {
 	conn := s.pool.Get()
 	defer conn.Close()
 
@@ -43,18 +45,18 @@ func (s *Subscriber) Run() error {
 	for {
 		switch v := psc.Receive().(type) {
 		case redigo.Message:
-			log.Printf("incoming [%v] message=%v", v.Channel, string(v.Data))
+			s.Logger.Info(ctx, "incoming [%v] message=%v", v.Channel, string(v.Data))
 
 			s.output <- v.Data
 
 		case redigo.Subscription:
-			log.Printf("Redis subscription received : channel=%v : kind=%v : count=%v", v.Channel, v.Kind, v.Count)
+			s.Logger.Info(ctx, "Redis subscription received : channel=%v : kind=%v : count=%v", v.Channel, v.Kind, v.Count)
 
 		case error:
-			log.Printf("Error while subscribed to Redis channel %s : %v", s.key, v)
+			s.Logger.Error(ctx, "Error while subscribed to Redis channel %s : %v", s.key, v)
 
 		default:
-			log.Println("Unknown Redis receive during subscription : v=%v", v)
+			s.Logger.Error(ctx, "Unknown Redis receive during subscription : v=%v", v)
 		}
 	}
 
