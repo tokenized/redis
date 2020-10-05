@@ -51,9 +51,8 @@ func (s *Subscriber) Run() error {
 			log.Printf("Redis subscription received : channel=%v : kind=%v : count=%v", v.Channel, v.Kind, v.Count)
 
 		case error:
-			log.Printf("Error while subscribed to Redis channel %s : %v",
-				s.key,
-				v)
+			log.Printf("Error while subscribed to Redis channel %s : %v", s.key, v)
+
 		default:
 			log.Println("Unknown Redis receive during subscription : v=%v", v)
 		}
