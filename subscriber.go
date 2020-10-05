@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 	redigo "github.com/gomodule/redigo/redis"
@@ -54,6 +55,8 @@ func (s *Subscriber) Run(ctx context.Context) error {
 
 		case error:
 			s.Logger.Error(ctx, "Error while subscribed to Redis channel %s : %v", s.key, v)
+
+			time.Sleep(2 * time.Second)
 
 		default:
 			s.Logger.Error(ctx, "Unknown Redis receive during subscription : v=%v", v)
