@@ -46,7 +46,7 @@ func (s *Subscriber) Run(ctx context.Context) error {
 	for {
 		switch v := psc.Receive().(type) {
 		case redigo.Message:
-			s.Logger.Info(ctx, "incoming [%v] message=%v", v.Channel, string(v.Data))
+			s.Logger.Info(ctx, "incoming [%v] message len=%v", v.Channel, len(v.Data))
 
 			s.output <- v.Data
 
