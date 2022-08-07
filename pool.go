@@ -11,16 +11,15 @@ import (
 
 type BorrowFunc func(c redigo.Conn, t time.Time) error
 
-func NewPool(uri string) (*redigo.Pool, error) {
+func NewPool(uri *url.URL) *redigo.Pool {
 	return NewPoolWithBorrowFunc(uri, PingOnBorrow)
 }
 
-func NewPoolWithBorrowFunc(uri string, f BorrowFunc) (*redigo.Pool, error) {
-	u, err := url.Parse(uri)
-	if err != nil {
-		return nil, err
-	}
+func NewPoolFromURL(uri *url.URL) *redigo.Pool {
+	return NewPoolWithBorrowFunc(uri, PingOnBorrow)
+}
 
+func NewPoolWithBorrowFunc(u *url.URL, f BorrowFunc) *redigo.Pool {
 	var password string
 	if u.User != nil {
 		password, _ = u.User.Password()
@@ -54,7 +53,7 @@ func NewPoolWithBorrowFunc(uri string, f BorrowFunc) (*redigo.Pool, error) {
 			return c, err
 		},
 		TestOnBorrow: f,
-	}, nil
+	}
 }
 
 func NoopOnBorrow(c redigo.Conn, t time.Time) error {
