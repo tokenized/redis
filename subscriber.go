@@ -8,7 +8,7 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 )
 
-// Subscriber subscribes to a Redis key, and writes received messages to a channel.
+// Subscriber subscribes to a Redis key, and writes receive messages to a channel.
 type Subscriber struct {
 	pool   *redis.Pool
 	key    string
@@ -44,8 +44,6 @@ func (s *Subscriber) Run(ctx context.Context) error {
 	for {
 		switch v := psc.Receive().(type) {
 		case redigo.Message:
-			s.Logger.Info(ctx, "Received channel=%v len=%v", v.Channel, len(v.Data))
-
 			s.output <- v.Data
 
 		case redigo.Subscription:
